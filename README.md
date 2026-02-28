@@ -1,42 +1,5 @@
 # Tour de Vino
 
-The user wants an expanded specification for a coding agent to iterate on and implement. The spec should include details such as architecture, tech stack, data models, API design, front-end components, routes, state management, authentication, payment integration, map integration, admin vendor flows, data validation, error handling, deployment considerations. Provide a comprehensive functional specification: high-level architecture diagram, technology choices (React + Redux + TypeScript or Vue + Pinia etc.), backend (Node.js/Express, Django, Go), database schema (PostgreSQL). Provide API endpoints with request/response payloads. Provide front-end component tree and responsibilities. Provide user stories, acceptance criteria. Provide UI/UX guidelines. Provide security considerations. Provide CI/CD pipeline steps. Provide performance considerations. Provide test strategy.
-
-Goal: Expand spec so a coding agent can iterate on it and implement it. So produce a detailed spec for both front-end and back-end, with all necessary details.
-
-We need to structure the answer clearly: Overview, Architecture diagram, Tech stack, Data model (entities), API contract, Front-end component architecture, State management, Routing, Auth flows, Payment integration details (Stripe/PayPal). Map integration: Google Maps or Leaflet. Admin dashboards UI components and data flows. Vendor portal features. Deployment environment: Docker, Kubernetes, CI/CD with GitHub Actions or GitLab CI.
-
-Also include test coverage plan: unit tests, integration tests, e2e tests with Cypress or Playwright. Provide acceptance criteria for each user story.
-
-Also include documentation guidelines: OpenAPI spec, Swagger UI, Postman collection. Provide a roadmap and iteration plan.
-
-The coding agent should be able to start implementing, so we need actionable items: create repo structure, set up frameworks.
-
-Let's produce a robust spec. Use markdown for clarity.
-
-We'll include:
-
-- Overview
-- High-level diagram (text-based)
-- Tech stack
-- Database schema (ER diagram in text or Mermaid)
-- API design with OpenAPI spec snippets
-- Front-end architecture: component tree, pages, shared components
-- State management: store modules
-- Auth flow diagrams
-- Payment integration steps
-- Map integration details
-- Admin & Vendor dashboards UI components list
-- Testing strategy
-- CI/CD pipeline steps
-- Deployment architecture
-- Security considerations (OAuth2, JWT)
-- Data validation & error handling patterns
-
-We need to be thorough.
-
-Let's start with a high-level architecture diagram:
-
 ```
 ┌───────────────────────┐
 │  Client (React/Vue)   │
