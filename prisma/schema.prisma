@@ -1,0 +1,314 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  VENDOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+}
+
+enum VendorApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TourStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum BookingStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id              String              @id @default(cuid())
+  email           String              @unique
+  passwordHash    String
+  firstName       String
+  lastName        String
+  role            Role                @default(CLIENT)
+  status          UserStatus          @default(ACTIVE)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  deletedAt       DateTime?
+
+  refreshTokens   RefreshToken[]
+  passwordResets  PasswordResetToken[]
+  vendorProfile   VendorProfile?
+  tours           Tour[]
+  bookings        Booking[]
+  reviews         Review[]
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VendorProfile {
+  id             String               @id @default(cuid())
+  userId         String               @unique
+  companyName    String
+  description    String?
+  payoutProvider String?
+  payoutAccountMasked String?
+  payoutConfiguredAt DateTime?
+  approvalStatus VendorApprovalStatus @default(PENDING)
+  reviewedById   String?
+  reviewedAt     DateTime?
+  rejectionReason String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Tour {
+  id            String      @id @default(cuid())
+  vendorId      String
+  slug          String      @unique
+  title         String
+  description   String
+  region        String
+  priceCents    Int
+  durationHours Int
+  latitude      Float?
+  longitude     Float?
+  status        TourStatus  @default(DRAFT)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  vendor        User        @relation(fields: [vendorId], references: [id], onDelete: Restrict)
+  media         TourMedia[]
+  schedules     TourSchedule[]
+  availability  TourAvailability[]
+  bookings      Booking[]
+  reviews       Review[]
+
+  @@index([vendorId])
+  @@index([region, status])
+}
+
+model TourMedia {
+  id        String   @id @default(cuid())
+  tourId     String
+  type      String
+  url       String
+  sortOrder Int      @default(0)
+
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@index([tourId])
+}
+
+model TourSchedule {
+  id        String   @id @default(cuid())
+  tourId     String
+  startsAt  DateTime
+  createdAt DateTime @default(now())
+
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@index([tourId, startsAt])
+}
+
+model TourAvailability {
+  id            String   @id @default(cuid())
+  tourId         String
+  date          DateTime
+  capacity      Int
+  bookedCount   Int      @default(0)
+
+  tour          Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, date])
+  @@index([tourId])
+}
+
+model Booking {
+  id              String         @id @default(cuid())
+  userId           String
+  tourId           String
+  scheduledAt      DateTime
+  guestCount       Int
+  specialRequests  String?
+  status           BookingStatus  @default(DRAFT)
+  totalCents       Int
+  idempotencyKey   String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  user             User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tour             Tour           @relation(fields: [tourId], references: [id], onDelete: Restrict)
+  payments         Payment[]
+  statusHistory    BookingStatusHistory[]
+  reviews          Review[]
+
+  @@index([userId])
+  @@index([tourId])
+  @@unique([idempotencyKey])
+}
+
+model BookingStatusHistory {
+  id          String        @id @default(cuid())
+  bookingId   String
+  fromStatus  BookingStatus?
+  toStatus    BookingStatus
+  changedById String?
+  createdAt   DateTime      @default(now())
+
+  booking     Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId      String
+  idempotencyKey String?
+  provider       String
+  providerRef    String?
+  amountCents    Int
+  currency       String        @default("USD")
+  status         PaymentStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  booking        Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  refunds        Refund[]
+
+  @@index([bookingId])
+  @@unique([idempotencyKey])
+}
+
+model Refund {
+  id            String   @id @default(cuid())
+  paymentId      String
+  amountCents    Int
+  reason         String?
+  providerRef    String?
+  createdAt      DateTime @default(now())
+
+  payment        Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+}
+
+model Review {
+  id             String    @id @default(cuid())
+  userId          String
+  tourId          String
+  bookingId       String?
+  rating          Int
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  tour            Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  booking         Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  vendorResponses VendorResponse[]
+
+  @@index([tourId])
+  @@index([userId])
+}
+
+model VendorResponse {
+  id        String   @id @default(cuid())
+  reviewId   String
+  vendorId   String
+  comment   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+}
+
+model ContentPage {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  body      String
+  published Boolean  @default(true)
+  updatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  sortOrder Int      @default(0)
+  published Boolean  @default(true)
+  updatedById String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
+
+model AppSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  updatedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

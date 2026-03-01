@@ -1,0 +1,22 @@
+{
+  "name": "web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --host ${NUXT_HOST:-0.0.0.0} --port ${NUXT_PORT:-40000}",
+    "build": "nuxt build",
+    "lint": "nuxi typecheck",
+    "typecheck": "nuxi typecheck"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "nuxt": "^3.19.2"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/leaflet": "^1.9.21",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2",
+    "vue-tsc": "^3.1.0"
+  }
+}

@@ -1,0 +1,11 @@
+.git
+node_modules
+**/node_modules
+.nuxt
+**/.nuxt
+output
+**/dist
+test-results
+coverage
+.env
+.env.*

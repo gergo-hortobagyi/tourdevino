@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tourdevino-config
+  namespace: tourdevino
+data:
+  API_PREFIX: api
+  CORS_ORIGIN: http://localhost:40000
+  REQUEST_BODY_LIMIT: 1mb
+  CANCELLATION_WINDOW_HOURS: "24"
+  PORT: "40001"
+  NUXT_PORT: "40000"
+  NUXT_PUBLIC_API_BASE_URL: http://api:40001/api

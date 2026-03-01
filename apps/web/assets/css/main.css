@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --vino-bg: #f8f5ef;
+  --vino-ink: #1f2937;
+  --vino-accent: #8b1e3f;
+}
+
+body {
+  background: radial-gradient(circle at top right, #efe7d8, var(--vino-bg));
+  color: var(--vino-ink);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+}
